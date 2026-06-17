@@ -13,10 +13,10 @@ jobs:
 
       - name: Merge project to root
         run: |
-          cp -r voice-led-source/* .
-          cp -r voice-led-source/.github .
+          cp -r voice-led-source/* . 2>/dev/null || true
+          cp -r voice-led-source/.[!.]* . 2>/dev/null || true
           echo "=== project root ==="
-          ls -la CMakeLists.txt platformio.ini main/ main/CMakeLists.txt 2>/dev/null
+          ls platformio.ini CMakeLists.txt main/main.c 2>/dev/null || true
 
       - name: Install PlatformIO
         run: pip install platformio
