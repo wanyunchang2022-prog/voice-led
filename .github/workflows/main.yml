@@ -11,29 +11,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Flatten project structure
+      - name: Flatten and fix project
         run: |
           echo "=== contents ==="
-          find . -maxdepth 3 -name "platformio.ini" -o -name "CMakeLists.txt" | head -10
-          echo "=== voice-led-source ==="
-          ls -la voice-led-source/
-          echo "=== main dir ==="
-          if [ -d voice-led-source/main ]; then echo "main FOUND in root"; fi
-          if [ -d voice-led-source/voice-led-source ]; then echo "DOUBLE NESTING found"; fi
-
-      - name: Fix project path
-        run: |
+          find . -maxdepth 2 -name "platformio.ini" -o -name "CMakeLists.txt" | head -10
+          # Fix double nesting
           if [ -d voice-led-source/voice-led-source ]; then
-            echo "Fixing double nesting..."
-            mv voice-led-source/voice-led-source/* voice-led-source/ 2>/dev/null
-            mv voice-led-source/voice-led-source/.[!.]* voice-led-source/ 2>/dev/null
-            rmdir voice-led-source/voice-led-source 2>/dev/null
+            mv voice-led-source/voice-led-source/* voice-led-source/ 2>/dev/null || true
+            mv voice-led-source/voice-led-source/.[!.]* voice-led-source/ 2>/dev/null || true
+            rmdir voice-led-source/voice-led-source 2>/dev/null || true
           fi
           if [ -f voice-led-source/platformio.ini ]; then
             echo "PROJECT_DIR=voice-led-source" | tee -a $GITHUB_ENV
-          elif [ -f platformio.ini ]; then
+          else
             echo "PROJECT_DIR=." | tee -a $GITHUB_ENV
           fi
+          echo "Project dir: $PROJECT_DIR"
+          ls -la $PROJECT_DIR/
 
       - name: Install PlatformIO
         run: pip install platformio
