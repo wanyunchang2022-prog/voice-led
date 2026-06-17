@@ -21,18 +21,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install platformio
 
-      - name: Show project files
-        run: |
-          pio --version
-          ls -la
-          cat platformio.ini
-
       - name: Build firmware
         run: |
+          cd voice-led-source
           pio run -v
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
           name: firmware
-          path: .pio/build/esp32-s3-devkitc-1/firmware.bin
+          path: voice-led-source/.pio/build/esp32-s3-devkitc-1/firmware.bin
