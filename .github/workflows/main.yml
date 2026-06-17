@@ -21,11 +21,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install platformio
 
+      - name: Install system tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build cmake
+
       - name: Build firmware
         run: |
           cd voice-led-source
-          sudo apt-get update
-          sudo apt-get install -y ninja-build cmake
           pio run -v
 
       - name: Upload firmware
