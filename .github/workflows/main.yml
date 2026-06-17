@@ -11,39 +11,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Show file structure
+      - name: Flatten project structure
         run: |
-          echo "=== ROOT ==="
-          ls -la
-          echo "=== RECURSIVE ==="
-          find . -name "*.ini" -o -name "CMakeLists.txt" | head -20
+          echo "=== contents ==="
+          find . -maxdepth 3 -name "platformio.ini" -o -name "CMakeLists.txt" | head -10
+          echo "=== voice-led-source ==="
+          ls -la voice-led-source/
+          echo "=== main dir ==="
+          if [ -d voice-led-source/main ]; then echo "main FOUND in root"; fi
+          if [ -d voice-led-source/voice-led-source ]; then echo "DOUBLE NESTING found"; fi
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+      - name: Fix project path
+        run: |
+          if [ -d voice-led-source/voice-led-source ]; then
+            echo "Fixing double nesting..."
+            mv voice-led-source/voice-led-source/* voice-led-source/ 2>/dev/null
+            mv voice-led-source/voice-led-source/.[!.]* voice-led-source/ 2>/dev/null
+            rmdir voice-led-source/voice-led-source 2>/dev/null
+          fi
+          if [ -f voice-led-source/platformio.ini ]; then
+            echo "PROJECT_DIR=voice-led-source" | tee -a $GITHUB_ENV
+          elif [ -f platformio.ini ]; then
+            echo "PROJECT_DIR=." | tee -a $GITHUB_ENV
+          fi
 
       - name: Install PlatformIO
-        run: |
-          pip install platformio
-          pio --version
-
-      - name: Install system tools
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ninja-build cmake
-          cmake --version
-          ninja --version
-
-      - name: Find platformio.ini
-        run: |
-          PROJECT_DIR=$(find . -name "platformio.ini" -not -path "./.git/*" | head -1 | xargs dirname)
-          echo "PROJECT_DIR=$PROJECT_DIR"
-          echo "PROJECT_DIR=$PROJECT_DIR" | tee -a $GITHUB_ENV
+        run: pip install platformio
 
       - name: Build firmware
         run: |
-          cd $PROJECT_DIR
+          cd ${{ env.PROJECT_DIR }}
           pio run -v
         timeout-minutes: 30
 
