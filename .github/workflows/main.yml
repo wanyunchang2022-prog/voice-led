@@ -11,6 +11,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Show file structure
+        run: |
+          echo "=== ROOT ==="
+          ls -la
+          echo "=== RECURSIVE ==="
+          find . -name "*.ini" -o -name "CMakeLists.txt" | head -20
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -18,21 +25,30 @@ jobs:
 
       - name: Install PlatformIO
         run: |
-          python -m pip install --upgrade pip
           pip install platformio
+          pio --version
 
       - name: Install system tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build cmake
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ninja-build cmake
+          cmake --version
+          ninja --version
+
+      - name: Find platformio.ini
+        run: |
+          PROJECT_DIR=$(find . -name "platformio.ini" -not -path "./.git/*" | head -1 | xargs dirname)
+          echo "PROJECT_DIR=$PROJECT_DIR"
+          echo "PROJECT_DIR=$PROJECT_DIR" | tee -a $GITHUB_ENV
 
       - name: Build firmware
         run: |
-          cd voice-led-source
+          cd $PROJECT_DIR
           pio run -v
+        timeout-minutes: 30
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
           name: firmware
-          path: voice-led-source/.pio/build/esp32-s3-devkitc-1/firmware.bin
+          path: ${{ env.PROJECT_DIR }}/.pio/build/esp32-s3-devkitc-1/firmware.bin
