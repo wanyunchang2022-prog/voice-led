@@ -21,11 +21,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install platformio
 
+      - name: Show project files
+        run: |
+          pio --version
+          ls -la
+          cat platformio.ini
+
       - name: Build firmware
         run: |
-          pio run
-        env:
-          PLATFORMIO_CORE_DIR: /home/runner/.platformio
+          pio run -v
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
