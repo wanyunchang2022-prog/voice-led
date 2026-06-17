@@ -11,35 +11,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Flatten and fix project
+      - name: Merge project to root
         run: |
-          echo "=== contents ==="
-          find . -maxdepth 2 -name "platformio.ini" -o -name "CMakeLists.txt" | head -10
-          # Fix double nesting
-          if [ -d voice-led-source/voice-led-source ]; then
-            mv voice-led-source/voice-led-source/* voice-led-source/ 2>/dev/null || true
-            mv voice-led-source/voice-led-source/.[!.]* voice-led-source/ 2>/dev/null || true
-            rmdir voice-led-source/voice-led-source 2>/dev/null || true
-          fi
-          if [ -f voice-led-source/platformio.ini ]; then
-            echo "PROJECT_DIR=voice-led-source" | tee -a $GITHUB_ENV
-          else
-            echo "PROJECT_DIR=." | tee -a $GITHUB_ENV
-          fi
-          echo "Project dir: $PROJECT_DIR"
-          ls -la $PROJECT_DIR/
+          cp -r voice-led-source/* .
+          cp -r voice-led-source/.github .
+          echo "=== project root ==="
+          ls -la CMakeLists.txt platformio.ini main/ main/CMakeLists.txt 2>/dev/null
 
       - name: Install PlatformIO
         run: pip install platformio
 
       - name: Build firmware
-        run: |
-          cd ${{ env.PROJECT_DIR }}
-          pio run -v
-        timeout-minutes: 30
+        run: pio run
+        timeout-minutes: 20
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
           name: firmware
-          path: ${{ env.PROJECT_DIR }}/.pio/build/esp32-s3-devkitc-1/firmware.bin
+          path: .pio/build/esp32-s3-devkitc-1/firmware.bin
