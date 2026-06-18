@@ -11,15 +11,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Merge project to root
+     - name: Merge project to root
         run: |
           cp -r voice-led-source/* . 2>/dev/null || true
-          cp -r voice-led-source/.[!.]* . 2>/dev/null || true
-          mkdir -p src
-          echo "// placeholder" > src/main.c
-          echo "=== project root ==="
-          ls platformio.ini CMakeLists.txt main/main.c src/main.c 2>/dev/null || true
-      - name: Install PlatformIO
+          rm -rf src 2>/dev/null || true
+          echo "=== files at root ==="
+          ls -la CMakeLists.txt platformio.ini 2>/dev/null || true
+          echo "=== main dir ==="
+          ls -la main/main.c main/CMakeLists.txt 2>/dev/null || true
         run: pip install platformio
 
       - name: Build firmware
