@@ -1,4 +1,5 @@
 dependencies:
+  espressif/cjson: "*"
   espressif/esp-sr: "~1.7.0"
   espressif/led_strip: "^2.5.0"
   idf:
