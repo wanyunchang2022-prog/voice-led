@@ -11,22 +11,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-     - name: Merge project to root
+      - name: Merge project and clean up
         run: |
           cp -r voice-led-source/* . 2>/dev/null || true
           rm -rf src 2>/dev/null || true
-          echo "=== files at root ==="
-          ls -la CMakeLists.txt platformio.ini 2>/dev/null || true
-          echo "=== main dir ==="
-          ls -la main/main.c main/CMakeLists.txt 2>/dev/null || true
+          echo "=== root files ==="
+          ls CMakeLists.txt platformio.ini main/main.c 2>/dev/null || true
+
+      - name: Install PlatformIO
         run: pip install platformio
 
       - name: Build firmware
         run: pio run
-        timeout-minutes: 20
+        timeout-minutes: 30
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
           name: firmware
           path: .pio/build/esp32-s3-devkitc-1/firmware.bin
+
